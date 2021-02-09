@@ -1,0 +1,8 @@
+version: 2
+
+macros:
+  - name: resume_warehouse
+    description: "If set to True, resume the given Snowflake virtual warehouse"
+  
+  - name: suspend_warehouse
+    description: "If set to True, suspend the given Snowflake virtual warehouse"

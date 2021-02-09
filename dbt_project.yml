@@ -1,0 +1,128 @@
+name: 'design_patterns'
+version: 0.1.0
+
+require-dbt-version: ">=0.18.1"
+config-version: 2
+
+# Configure database connection profile for dbt to use
+profile: 'local_dev'
+
+# Set paths for dbt objects
+analysis-paths: ["analysis"]
+asset-paths: ["docs/assets"]
+data-paths: ["data"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+source-paths: ["models"]
+test-paths: ["tests"]
+
+log-path: "logs"
+modules-path: "dbt_modules"
+target-path: "target"
+clean-targets:
+  - "dbt_modules"
+  - "target"
+
+# Set query behavior: prepend comments and quoting
+query-comment: "{{ query_comment(node) }}"
+quoting:
+  database: false
+  schema: false
+  identifier: false
+
+# Run Hooks
+on-run-start:
+  - "{{ resume_warehouse(var('resume_warehouse', false), var('warehouse_name', target.warehouse)) }}"
+on-run-end:
+  - "{{ record_run_results(results) }}"
+  - "{{ suspend_warehouse(var('suspend_warehouse', false), var('warehouse_name', target.warehouse)) }}"
+
+# Create scoped variables
+vars:
+  design_patterns:
+    dbt_project_created_date: '2020-10-15'  # Set as date when dbt project first created
+    analysis_start_date: '2013-01-01'  # Set as date when dbt project first created
+    analysis_end_date: dbt_utils.current_timestamp()
+    source_database: lake
+
+
+# DBT MODELS
+models:
+  design_patterns:
+    +enabled: true
+    +materialized: view
+    +persist_docs:
+      relation: true
+      columns: true
+    
+    staging:
+      +enabled: true
+      +schema: staging
+
+    marts:
+      +enabled: true
+      +materialized: table
+
+      core:
+        +enabled: true
+        +schema: core
+        +tags:
+          - "core"
+          - "daily"
+        intermediate:
+          +enabled: true
+          +schema: intermediate
+      
+      b2b:
+        +enabled: true
+        +schema: b2b
+        +tags:
+          - "b2b"
+          - "daily"
+        intermediate:
+          +enabled: true
+          +schema: intermediate
+
+      marketing:
+        +enabled: true
+        +schema: marketing
+        +tags:
+          - "marketing"
+          - "daily"
+        intermediate:
+          +enabled: true
+          +schema: intermediate
+  
+  snowflake_spend:
+    +enabled: true
+    +materialized: table
+    +schema: metadata
+    +tags:
+      - "admin"
+      - "metadata"
+      - "daily"
+      
+    base:
+      +materialized: view
+      +schema: intermediate
+
+
+# Configure Snapshots
+snapshots:
+  design_patterns:
+    +enabled: true
+    +target_database: lake
+    +target_schema: snapshots
+    +transient: false
+
+    source_db:
+      +tags: ["daily"]
+
+
+# Define dbt data seeds
+seeds:
+  +quote_columns: false
+
+  design_patterns:
+    +enabled: true
+    +schema: intermediate

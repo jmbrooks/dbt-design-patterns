@@ -1,0 +1,19 @@
+config:
+  use_colors: true
+  send_anonymous_usage_stats: true
+
+local_dev:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: my_snowflake_account
+      user: your_user  # <-- This will be your Okta email, e.g. johnathan@company.com
+      authenticator: externalbrowser
+      database: dev
+      schema: dbt_youruser  # <-- Replace "youruser" with your first initial and last name as one word, e.g. dbt_jbrooks
+      role: transformer
+      warehouse: transforming_xs
+      threads: 4
+      client_session_keep_alive: False
+      query_tag: dbt-dev-youruser  # <-- Replace "youruser" with your first initial and last name as one word, e.g. dbt-dev-jbrooks
